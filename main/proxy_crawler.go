@@ -24,7 +24,7 @@ func validHTTPBin(proxyURL string) (bool, string) {
 	transport := &http.Transport{Proxy: proxy}
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   time.Duration(20 * time.Second),
+		Timeout:   time.Duration(5 * time.Second),
 	}
 	resp, err := client.Get("http://httpbin.org/ip")
 
@@ -41,8 +41,8 @@ func validHTTPBin(proxyURL string) (bool, string) {
  * 爬IP，需要定制
  **/
 func proxyCrawler(session *mgo.Session) {
-	iteration := 20  // 提取多少轮
-	batchCount := 25 // 一次提取多少个
+	iteration := 100 // 提取多少轮
+	batchCount := 20 // 一次提取多少个
 	ch := make(chan proxypool.Proxy, batchCount)
 	exit := make(chan int, 1)
 	for i := 0; i < iteration; i++ {
@@ -63,6 +63,7 @@ func proxyCrawler(session *mgo.Session) {
 				}
 				if count == batchCount {
 					exit <- 1
+					break
 				}
 			}
 		}()
