@@ -55,6 +55,7 @@ func main() {
 		}
 		c.JSON(200, gin.H{
 			"success": true,
+			"count":   len(results),
 			"proxies": results,
 		})
 
