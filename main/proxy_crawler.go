@@ -13,6 +13,10 @@ import (
 	"github.com/nladuo/go-proxypool"
 )
 
+const (
+	ConcurNum int = 20 //并发数
+)
+
 /**
  * 在HttpBin验证ip
  * proxy_url: http://[host]:[port]
@@ -24,7 +28,7 @@ func validHTTPBin(proxyURL string) (bool, string) {
 	transport := &http.Transport{Proxy: proxy}
 	client := &http.Client{
 		Transport: transport,
-		Timeout:   time.Duration(5 * time.Second),
+		Timeout:   time.Duration(20 * time.Second),
 	}
 	resp, err := client.Get("http://httpbin.org/ip")
 
@@ -41,10 +45,26 @@ func validHTTPBin(proxyURL string) (bool, string) {
  * 爬IP，需要定制
  **/
 func proxyCrawler(session *mgo.Session) {
-	iteration := 100 // 提取多少轮
-	batchCount := 20 // 一次提取多少个
-	ch := make(chan proxypool.Proxy, batchCount)
-	exit := make(chan int, 1)
+	iteration := 10   // 提取多少轮
+	batchCount := 100 // 一次提取多少个
+	dataChan := make(chan proxypool.Proxy, ConcurNum)
+	occupyChan := make(chan bool, ConcurNum)
+	exitChan := make(chan bool, 1)
+	go func() { // 代理入库
+		exit := false
+		for {
+			select {
+			case p := <-dataChan:
+				p.Insert(session)
+			case <-exitChan:
+				exit = true
+			}
+			if exit {
+				break
+			}
+		}
+	}()
+	count := 1 //记录第几个代理
 	for i := 0; i < iteration; i++ {
 		resp, _ := http.Get(fmt.Sprintf("http://tvp.daxiangdaili.com/ip/?tid=557647932245581&num=%d&delay=1", batchCount))
 
@@ -53,27 +73,13 @@ func proxyCrawler(session *mgo.Session) {
 
 		proxys := strings.Split(string(data), "\r\n")
 
-		go func() { // 代理入库
-			count := 0
-			for {
-				select {
-				case p := <-ch:
-					p.Insert(session)
-					count++
-				}
-				if count == batchCount {
-					exit <- 1
-					break
-				}
-			}
-		}()
-
 		for _, proxy := range proxys { //验证代理ip
 			proxyURL := "http://" + proxy
 			fmt.Println(proxyURL)
-			go func(proxy string) {
+			occupyChan <- true //获取占用权
+			go func(proxy string, count int) {
 				success, msg := validHTTPBin(proxyURL)
-				fmt.Println(i, msg)
+				fmt.Println(count, msg)
 
 				p := proxypool.Proxy{
 					IP:         strings.Split(proxy, ":")[0],
@@ -82,15 +88,18 @@ func proxyCrawler(session *mgo.Session) {
 					Success:    success,
 					Msg:        msg,
 				}
-
-				ch <- p //一个任务完成
-			}(proxy)
+				<-occupyChan  //释放占用权
+				dataChan <- p //单线程入库
+			}(proxy, count)
+			count++
 		}
 
-		<-exit // 退出
+		// <-exit // 退出
 	}
-	close(ch) //关闭管道
-	close(exit)
+	exitChan <- true
+	close(occupyChan) //关闭管道
+	close(dataChan)
+	close(exitChan)
 }
 
 /**
