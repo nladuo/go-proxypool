@@ -21,15 +21,15 @@ make
 http://127.0.0.1:4002/proxy_pool?count=100
 ``` json
 {
-    "total_count": 523,
+    "success": true,
     "proxies":[
         {
-            "host": "12.33.81.3",
-            "port": "80"
+            "Ip": "12.33.81.3",
+            "Port": "80"
         },
         {
-            "host": "54.64.7.99",
-            "port": "8079"
+            "Ip": "54.64.7.99",
+            "Port": "8079"
         },
         ...............
     ]
