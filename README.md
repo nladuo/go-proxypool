@@ -1,5 +1,5 @@
 # go-proxypool
-自用的代理ip池
+自用的代理ip池，作为一个基础框架。
 ## 依赖
 golang + mongodb
 

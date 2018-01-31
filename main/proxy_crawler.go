@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/nladuo/go-proxypool"
 )
 
@@ -38,6 +39,12 @@ func validHTTPBin(proxyURL string) (bool, string) {
 
 	data, _ := ioutil.ReadAll(resp.Body)
 
+	_, err = simplejson.NewJson(data) //判断是否是json
+
+	if err != nil {
+		return false, string(data)
+	}
+
 	return true, string(data)
 }
 
@@ -45,28 +52,25 @@ func validHTTPBin(proxyURL string) (bool, string) {
  * 爬IP，需要定制
  **/
 func proxyCrawler(session *mgo.Session) {
-	iteration := 10   // 提取多少轮
-	batchCount := 100 // 一次提取多少个
+	Iteration := 60  // 提取多少轮
+	BatchCount := 32 // 一次提取多少个
 	dataChan := make(chan proxypool.Proxy, ConcurNum)
 	occupyChan := make(chan bool, ConcurNum)
 	exitChan := make(chan bool, 1)
 	go func() { // 代理入库
-		exit := false
+	DONE:
 		for {
 			select {
 			case p := <-dataChan:
 				p.Insert(session)
 			case <-exitChan:
-				exit = true
-			}
-			if exit {
-				break
+				break DONE
 			}
 		}
 	}()
 	count := 1 //记录第几个代理
-	for i := 0; i < iteration; i++ {
-		resp, _ := http.Get(fmt.Sprintf("http://tvp.daxiangdaili.com/ip/?tid=557647932245581&num=%d&delay=1", batchCount))
+	for i := 0; i < Iteration; i++ {
+		resp, _ := http.Get(fmt.Sprintf("http://tvp.daxiangdaili.com/ip/?tid=557647932245581&num=%d&delay=1", BatchCount))
 
 		data, _ := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
