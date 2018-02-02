@@ -35,8 +35,8 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(5 * time.Minute) // 5分钟校验一次
 			validCrawler(session)
+			time.Sleep(5 * time.Minute) // 5分钟校验一次
 		}
 	}()
 
