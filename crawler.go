@@ -15,7 +15,7 @@ import (
  * 这个用的是大象代理的
  **/
 func proxyCrawler(session *mgo.Session) {
-	Iteration := 1
+	Iteration := 3
 	BatchCount := 500 // 一次提取多少个
 	dataChan := make(chan Proxy, ConcurNum)
 	occupyChan := make(chan bool, ConcurNum)
@@ -60,6 +60,7 @@ func proxyCrawler(session *mgo.Session) {
 			}(proxy, count)
 			count++
 		}
+		time.Sleep(5 * time.Minute)
 	}
 	exitChan <- true // 退出
 }

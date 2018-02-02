@@ -27,10 +27,16 @@ func main() {
 
 	go func() {
 		//代理爬虫，可以自己定制如何爬取，如果库里面有，可以选择不跑
-		proxyCrawler(session)
 		for {
+			proxyCrawler(session)
+			time.Sleep(5 * time.Minute) // 5分钟爬取一次
+		}
+	}()
+
+	go func() {
+		for {
+			time.Sleep(5 * time.Minute) // 5分钟校验一次
 			validCrawler(session)
-			time.Sleep(10 * time.Minute) // 10分钟校验一次
 		}
 	}()
 
