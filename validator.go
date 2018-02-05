@@ -85,8 +85,8 @@ func validCrawler(session *mgo.Session, success bool) {
 		go func(proxy Proxy, count int) {
 			proxyURL := "http://" + proxy.IP + ":" + proxy.Port
 			success, msg := validHTTPBin(proxyURL)
-			fmt.Println(count, "valid http-bin", proxy, success, msg)
-
+			fmt.Println("\033[1;36mvalid \033[0mhttp-bin", count, proxy, success)
+			fmt.Println(msg)
 			dataChan <- Data{
 				proxy: proxy,
 				key:   "success",

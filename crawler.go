@@ -46,7 +46,8 @@ func proxyCrawler(session *mgo.Session) {
 			go func(proxy string, count int) {
 				proxyURL := "http://" + proxy
 				success, msg := validHTTPBin(proxyURL)
-				fmt.Println(count, "cralwed", proxy, success, msg)
+				fmt.Println("\033[1;32mcralwed\033[0m", count, proxy, success)
+				fmt.Println(msg)
 
 				p := Proxy{
 					IP:         strings.Split(proxy, ":")[0],
