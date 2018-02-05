@@ -35,8 +35,9 @@ func main() {
 
 	go func() {
 		for {
-			validCrawler(session)
-			time.Sleep(5 * time.Minute) // 5分钟校验一次
+			validCrawler(session, true)  // 先校验当前可用的ip
+			validCrawler(session, false) // 再校验其他ip
+			time.Sleep(5 * time.Minute)  // 5分钟校验一次
 		}
 	}()
 

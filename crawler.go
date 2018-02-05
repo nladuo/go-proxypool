@@ -12,7 +12,8 @@ import (
 
 /**
  * 爬IP，需要定制
- * 这个用的是大象代理的
+ * 这个用的是大象代理的,http://www.daxiangdaili.com/
+ * 需要改成你买的代理ip
  **/
 func proxyCrawler(session *mgo.Session) {
 	Iteration := 3
@@ -33,7 +34,7 @@ func proxyCrawler(session *mgo.Session) {
 	}()
 	count := 1 //记录第几个代理
 	for i := 0; i < Iteration; i++ {
-		resp, _ := http.Get(fmt.Sprintf("http://tvp.daxiangdaili.com/ip/?tid=557647932245581&num=%d&delay=3", BatchCount))
+		resp, _ := http.Get(fmt.Sprintf("http://tvp.daxiangdaili.com/ip/?tid=[你的订单编号]&num=%d&delay=3", BatchCount))
 
 		data, _ := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()

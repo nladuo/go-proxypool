@@ -56,10 +56,10 @@ type Data struct {
 /**
  * 验证爬虫，每隔一段时间一次
  **/
-func validCrawler(session *mgo.Session) {
+func validCrawler(session *mgo.Session, success bool) {
 	c := session.DB("go-proxytool").C("proxy")
 	proxies := []Proxy{}
-	err := c.Find(bson.M{}).All(&proxies)
+	err := c.Find(bson.M{"maimai": success}).All(&proxies)
 
 	if err != nil {
 		panic(err)
